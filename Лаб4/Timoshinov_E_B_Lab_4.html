@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная работа 4: (L-R) числа и W-числа</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            color: black;
+            background-color: white;
+        }
+        .author {
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 14pt;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18pt;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        h2 {
+            font-size: 16pt;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        h3 {
+            font-size: 14pt;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        p {
+            text-align: justify;
+            line-height: 1.5;
+            margin: 10px 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: white;
+            font-weight: bold;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 15px auto;
+            border: 1px solid black;
+        }
+        .figure-caption {
+            text-align: center;
+            font-style: italic;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        .formula {
+            text-align: center;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="author">
+        <p><strong>Выполнил:</strong> Тимошинов Егор Борисович</p>
+        <p><strong>Группа:</strong> 16</p>
+    </div>
+
+    <h1>Лабораторная работа 4</h1>
+    <h2>(L-R) числа и W-числа</h2>
+
+    <h2>1. Теоретические сведения</h2>
+
+    <h3>1.1. Нечеткие числа (L-R) типа</h3>
+
+    <p>Непосредственный подсчет легко реализуется для дискретных нечетких чисел, но для непрерывных нечетких чисел непосредственное выполнение этих операций затруднено. Поэтому применяется форма представления функций принадлежности нечетких чисел в виде (L-R) функций.</p>
+
+    <p><strong>Определение:</strong> Функции (L-R) типа определяются как произвольные невозрастающие на множестве неотрицательных действительных чисел функции, удовлетворяющие условиям:</p>
+
+    <div class="formula">
+        $$L(-x) = L(x), \quad R(-x) = R(x), \quad L(0) = R(0) = 1.$$
+    </div>
+
+    <p><strong>Нечеткое число (L-R) типа</strong> — нечеткая величина $\widetilde{B} = \{x / \mu_{\widetilde{B}}(x)\}$, функция принадлежности которой может быть представлена в форме композиции некоторой L-функции и некоторой R-функции следующим образом:</p>
+
+    <div class="formula">
+        $$\mu_{\widetilde{B}}(x) = \begin{cases}
+        L\left(\dfrac{a - x}{\alpha}\right), & x \leq a, \\
+        R\left(\dfrac{x - a}{\beta}\right), & x > a,
+        \end{cases}$$
+    </div>
+
+    <p>где $\alpha$, $\beta > 0$. При этом параметр $a$ является модой нечеткого числа, а параметры $\alpha$ и $\beta$ — левый и правый коэффициенты нечеткости.</p>
+
+    <p>Нечеткое число (L-R)-типа с функцией принадлежности $\mu_{\widetilde{B}}(x)$ однозначно определяется тройкой своих параметров $\langle a, \alpha, \beta \rangle$. Нечеткие числа (L-R)-типа обозначаются $\widetilde{B}_{LR} = \langle a, \alpha, \beta \rangle_{LR}$.</p>
+
+    <h3>1.2. Операции с нечеткими числами (L-R) типа</h3>
+
+    <p>Пусть $\widetilde{A}_{LR} = \langle a_1, \alpha_1, \beta_1 \rangle_{LR}$, $\widetilde{B}_{LR} = \langle a_2, \alpha_2, \beta_2 \rangle_{LR}$ — два нечетких числа (L-R)-типа.</p>
+
+    <p>Тогда основные операции над этими числами реализуются следующим образом:</p>
+
+    <ol>
+        <li>Противоположное число: $-\widetilde{A}_{LR} = \langle -a_1, \beta_1, \alpha_1 \rangle_{LR}$</li>
+        <li>Обратное число: $\widetilde{A}_{LR}^{-1} = \left\langle \frac{1}{a_1}, \frac{\beta_1}{a_1^2}, \frac{\alpha_1}{a_1^2} \right\rangle_{LR}$</li>
+        <li>Сумма: $\widetilde{A}_{LR} + \widetilde{B}_{LR} = \left\langle a_1 + a_2, \alpha_1 + \alpha_2, \beta_1 + \beta_2 \right\rangle_{LR}$</li>
+        <li>Разность: $\widetilde{A}_{LR} - \widetilde{B}_{LR} = \left\langle a_1 - a_2, \alpha_1 + \beta_2, \alpha_2 + \beta_1 \right\rangle_{LR}$</li>
+        <li>Произведение двух положительных нечетких чисел: $\widetilde{A}_{LR} \cdot \widetilde{B}_{LR} = \left\langle a_1 \cdot a_2, a_1\alpha_2 + a_2\alpha_1, a_1\beta_2 + a_2\beta_1 \right\rangle_{LR}$</li>
+    </ol>
+
+    <h3>1.3. W-числа (двухкомпонентные треугольные числа)</h3>
+
+    <p>Двухкомпонентным треугольным числом W (W-число) будем называть конструкцию, представленную вектором однокомпонентных чисел $\left(x^{L}(r); x^{R}(r)\right)$, причем $x^{L}(1) = x^{R}(1)$. Здесь $x^{L}(r)$ — левая компонента W-числа, $x^{R}(r)$ — правая компонента W-числа.</p>
+
+    <p>W-число также можно представлять в виде трех чисел $W = (a, b, c)$, которое в параметрической форме имеет вид:</p>
+
+    <div class="formula">
+        $$x^{L}(r) = a + (b - a) \cdot r, \quad x^{R}(r) = c + (b - c)r.$$
+    </div>
+
+    <p>Пусть два W-числа представлены в виде $W1 = (a1, b1, c1)$, $W2 = (a2, b2, c2)$. Тогда результат выполнения операции примет вид:</p>
+
+    <div class="formula">
+        $$W = (a1 \cdot a2, b1 \cdot b2, c1 \cdot c2),$$
+    </div>
+
+    <p>где $\cdot \in \{+; -; \bullet; / \}$ и все операции выполняются по правилам работы с действительными числами.</p>
+
+    <h2>2. Практическая часть</h2>
+
+    <h3>2.1. Пример работы с (L-R) числами</h3>
+
+    <p><strong>Задание:</strong> Пусть нечеткое число (L-R)-типа задано с помощью функций</p>
+
+    <div class="formula">
+        $$L(u) = e^{-\frac{u^2}{2}}, \quad u = \frac{a - x}{\alpha}, \quad x \leq a;$$
+        $$R(v) = e^{-\frac{v^2}{2}}, \quad v = \frac{x - a}{\beta}, \quad x > a;$$
+    </div>
+
+    <p>причем $a = 3$, $\alpha = 1$, $\beta = 2$.</p>
+
+    <p><strong>Решение:</strong></p>
+
+    <p>Нечеткое число имеет функцию принадлежности:</p>
+
+    <div class="formula">
+        $$\mu_{\widetilde{B}}(x) = \begin{cases} e^{-\frac{(3 - x)^2}{2}}, & x \leq 3, \\ e^{-\frac{(x - 3)^2}{8}}, & x > 3. \end{cases}$$
+    </div>
+
+    <p>График функции принадлежности представлен на рисунке 1.</p>
+
+    <img src="lr_function.png" alt="График функции принадлежности (L-R) числа">
+    <div class="figure-caption">Рисунок 1. График функции принадлежности нечеткого числа (L-R) типа</div>
+
+    <h3>2.2. Работа с W-числами</h3>
+
+    <p><strong>Задание:</strong> Даны два W-числа:</p>
+
+    <div class="formula">
+        $$W1 = (1, 3, 7), \quad W2 = (4, 8, 9)$$
+    </div>
+
+    <p><strong>Найти:</strong></p>
+
+    <p><strong>1) Левая и правая компоненты этих чисел:</strong></p>
+
+    <p>Для W1:</p>
+    <div class="formula">
+        $$x_1^{L}(r) = 1 + (3 - 1)r = 1 + 2r$$
+        $$x_1^{R}(r) = 7 + (3 - 7)r = 7 - 4r$$
+    </div>
+
+    <p>Для W2:</p>
+    <div class="formula">
+        $$x_2^{L}(r) = 4 + (8 - 4)r = 4 + 4r$$
+        $$x_2^{R}(r) = 9 + (8 - 9)r = 9 - r$$
+    </div>
+
+    <p><strong>2) Сумма, разность, произведение и частное двух W-чисел по формуле (2):</strong></p>
+
+    <p><strong>Сумма:</strong></p>
+    <div class="formula">
+        $$W1 + W2 = (x_1^{L}(r) + x_2^{L}(r); x_1^{R}(r) + x_2^{R}(r))$$
+        $$= (1 + 2r + 4 + 4r; 7 - 4r + 9 - r)$$
+        $$= (5 + 6r; 16 - 5r)$$
+    </div>
+
+    <p><strong>Разность:</strong></p>
+    <div class="formula">
+        $$W1 - W2 = (x_1^{L}(r) - x_2^{L}(r); x_1^{R}(r) - x_2^{R}(r))$$
+        $$= (1 + 2r - 4 - 4r; 7 - 4r - 9 + r)$$
+        $$= (-3 - 2r; -2 - 3r)$$
+    </div>
+
+    <p><strong>Произведение:</strong></p>
+    <div class="formula">
+        $$W1 \cdot W2 = (x_1^{L}(r) \cdot x_2^{L}(r); x_1^{R}(r) \cdot x_2^{R}(r))$$
+        $$= ((1 + 2r)(4 + 4r); (7 - 4r)(9 - r))$$
+        $$= (4 + 4r + 8r + 8r^2; 63 - 7r - 36r + 4r^2)$$
+        $$= (4 + 12r + 8r^2; 63 - 43r + 4r^2)$$
+    </div>
+
+    <p>Для упрощения, используя линейную аппроксимацию:</p>
+    <div class="formula">
+        $$W1 \cdot W2 \approx (4 + 20r; 63 - 39r)$$
+    </div>
+
+    <p><strong>Частное:</strong></p>
+    <div class="formula">
+        $$W1 : W2 = \left(\frac{x_1^{L}(r)}{x_2^{L}(r)}; \frac{x_1^{R}(r)}{x_2^{R}(r)}\right)$$
+        $$= \left(\frac{1 + 2r}{4 + 4r}; \frac{7 - 4r}{9 - r}\right)$$
+        $$= \left(\frac{1}{4} + \frac{1}{8}r; \frac{7}{9} - \frac{29}{72}r\right)$$
+    </div>
+
+    <p><strong>3) Сумма, разность, произведение и частное двух W-чисел по формуле (4):</strong></p>
+
+    <p><strong>Сумма:</strong></p>
+    <div class="formula">
+        $$W1 + W2 = (1 + 4; 3 + 8; 7 + 9) = (5; 11; 16)$$
+    </div>
+
+    <p><strong>Разность:</strong></p>
+    <div class="formula">
+        $$W1 - W2 = (1 - 4; 3 - 8; 7 - 9) = (-3; -5; -2)$$
+    </div>
+
+    <p><strong>Произведение:</strong></p>
+    <div class="formula">
+        $$W1 \cdot W2 = (1 \cdot 4; 3 \cdot 8; 7 \cdot 9) = (4; 24; 63)$$
+    </div>
+
+    <p><strong>Частное:</strong></p>
+    <div class="formula">
+        $$W1 : W2 = \left(\frac{1}{4}; \frac{3}{8}; \frac{7}{9}\right)$$
+    </div>
+
+    <p><strong>4) Графики результатов операций:</strong></p>
+
+    <img src="w_numbers_operations.png" alt="Графики операций с W-числами">
+    <div class="figure-caption">Рисунок 2. Графики результатов операций с W-числами</div>
+
+    <h3>2.3. Решение уравнений с W-числами</h3>
+
+    <p><strong>5) Решить уравнения:</strong></p>
+
+    <p><strong>а) $W1 + X = W2$</strong></p>
+
+    <p>Используя формулу (4), получаем:</p>
+    <div class="formula">
+        $$X = W2 - W1 = (4 - 1; 8 - 3; 9 - 7) = (3; 5; 2)$$
+    </div>
+
+    <p>Проверка: $W1 + X = (1, 3, 7) + (3, 5, 2) = (4, 8, 9) = W2$ ✓</p>
+
+    <p><strong>б) $W1 \cdot X = W2$</strong></p>
+
+    <p>Используя формулу (4), получаем:</p>
+    <div class="formula">
+        $$X = W2 : W1 = \left(\frac{4}{1}; \frac{8}{3}; \frac{9}{7}\right) = \left(4; \frac{8}{3}; \frac{9}{7}\right)$$
+    </div>
+
+    <p>Проверка: $W1 \cdot X = (1, 3, 7) \cdot \left(4, \frac{8}{3}, \frac{9}{7}\right) = \left(4, 8, 9\right) = W2$ ✓</p>
+
+    <p><strong>6) Решить уравнение: $x^2 + W2 \cdot x + 2 = 0$</strong></p>
+
+    <p>Здесь $W2 = (4, 8, 9)$. Уравнение имеет вид:</p>
+    <div class="formula">
+        $$x^2 + (4, 8, 9) \cdot x + 2 = 0$$
+    </div>
+
+    <p>Для решения этого уравнения с W-числами, рассмотрим его для каждого уровня принадлежности $r \in [0, 1]$.</p>
+
+    <p>При $r = 0$ для левой компоненты (нижняя граница):</p>
+    <div class="formula">
+        $$x^2 + 4x + 2 = 0$$
+        $$D = 16 - 8 = 8$$
+        $$x = \frac{-4 \pm \sqrt{8}}{2} = -2 \pm \sqrt{2}$$
+        $$x_1^{L}(0) = -2 - \sqrt{2} \approx -3.414$$
+        $$x_2^{L}(0) = -2 + \sqrt{2} \approx -0.586$$
+    </div>
+
+    <p>При $r = 1$ (мода, где $x^{L}(1) = x^{R}(1) = 8$):</p>
+    <div class="formula">
+        $$x^2 + 8x + 2 = 0$$
+        $$D = 64 - 8 = 56$$
+        $$x = \frac{-8 \pm \sqrt{56}}{2} = -4 \pm \sqrt{14}$$
+        $$x_1(1) = -4 - \sqrt{14} \approx -7.742$$
+        $$x_2(1) = -4 + \sqrt{14} \approx -0.258$$
+    </div>
+
+    <p>При $r = 0$ для правой компоненты (верхняя граница):</p>
+    <div class="formula">
+        $$x^2 + 9x + 2 = 0$$
+        $$D = 81 - 8 = 73$$
+        $$x = \frac{-9 \pm \sqrt{73}}{2}$$
+        $$x_1^{R}(0) = \frac{-9 - \sqrt{73}}{2} \approx -8.772$$
+        $$x_2^{R}(0) = \frac{-9 + \sqrt{73}}{2} \approx -0.228$$
+    </div>
+
+    <p>Таким образом, решение уравнения представляет собой два W-числа:</p>
+    <div class="formula">
+        $$X_1 = (-8.772, -7.742, -3.414)$$
+        $$X_2 = (-0.586, -0.258, -0.228)$$
+    </div>
+
+    <p>Где для $X_1$: левая граница при $r=0$ равна $-8.772$, мода при $r=1$ равна $-7.742$, правая граница при $r=0$ равна $-3.414$.</p>
+    <p>Для $X_2$: левая граница при $r=0$ равна $-0.586$, мода при $r=1$ равна $-0.258$, правая граница при $r=0$ равна $-0.228$.</p>
+
+    <h2>3. Выводы</h2>
+
+    <p>В ходе выполнения лабораторной работы были изучены методы работы с нечеткими числами (L-R) типа и W-числами. Были выполнены основные арифметические операции над нечеткими числами и решены уравнения с использованием W-чисел. Показано, что операции с нечеткими числами позволяют учитывать неопределенность в математических вычислениях.</p>
+
+    <p>Основные результаты:</p>
+    <ul>
+        <li>Изучены методы представления нечетких чисел в виде (L-R) функций</li>
+        <li>Выполнены арифметические операции с W-числами двумя способами</li>
+        <li>Решены уравнения с W-числами</li>
+        <li>Построены графики функций принадлежности</li>
+    </ul>
+
+</body>
+</html>
+
