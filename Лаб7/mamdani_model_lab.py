@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Лабораторная работа: Модель Мамдани
+Лабораторная работа 7 (часть 1): Модель Мамдани
 Выполнил: Тимошинов Егор Борисович, группа 16
 """
 
@@ -178,8 +178,15 @@ for i, z in enumerate(z_disc):
 # Метод центра тяжести (центроид)
 def defuzzify_centroid(z_values, mu_values):
     """Дефаззификация методом центра тяжести"""
-    numerator = np.trapz(z_values * mu_values, z_values)
-    denominator = np.trapz(mu_values, z_values)
+    # Используем метод трапеций для численного интегрирования
+    # Вычисляем интеграл от z * μ(z) и от μ(z)
+    numerator = 0.0
+    denominator = 0.0
+    for i in range(len(z_values) - 1):
+        dz = z_values[i + 1] - z_values[i]
+        # Метод трапеций
+        numerator += dz * (z_values[i] * mu_values[i] + z_values[i + 1] * mu_values[i + 1]) / 2.0
+        denominator += dz * (mu_values[i] + mu_values[i + 1]) / 2.0
     if denominator == 0:
         return 0.0
     return numerator / denominator
