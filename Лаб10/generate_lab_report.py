@@ -3,302 +3,280 @@
 Генерация HTML отчета для лабораторной работы 10
 """
 
-import os
-import pickle
-import sys
-import io
 import numpy as np
+import pickle
+import os
 
-# Меняем рабочую директорию на директорию скрипта
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+def format_matrix_html(M, states, title="M"):
+    """Форматирует матрицу в HTML таблицу"""
+    html = f'<p><strong>{title}:</strong></p>\n'
+    html += '<div class="formula">\n'
+    html += f'    {title} = <table style="width: auto; margin: 10px auto;">\n'
+    html += '        <tr>\n'
+    html += '            <th></th>\n'
+    for state in states:
+        html += f'            <th>S<sub>{state}</sub></th>\n'
+    html += '        </tr>\n'
+    
+    for i, state in enumerate(states):
+        html += '        <tr>\n'
+        html += f'            <th>S<sub>{state}</sub></th>\n'
+        for j in range(len(states)):
+            html += f'            <td>{M[i, j]:.4f}</td>\n'
+        html += '        </tr>\n'
+    
+    html += '    </table>\n'
+    html += '</div>\n'
+    return html
 
-# Загрузка результатов
-print("Загрузка результатов...")
-with open('fuzzy_comparison_results.pkl', 'rb') as f:
-    results = pickle.load(f)
+def format_vector_html(p_bar, states, title="p̅"):
+    """Форматирует вектор в HTML"""
+    if title == "":
+        html = '<p>['
+    else:
+        html = f'<p><strong>{title} = [</strong>'
+    values = []
+    for i, state in enumerate(states):
+        values.append(f'{p_bar[i]:.6f}')
+    html += '; '.join(values)
+    if title == "":
+        html += ']</p>\n'
+    else:
+        html += ']</p>\n'
+    return html
 
-# Загрузка изображений
-try:
-    with open('plot_images.pkl', 'rb') as f:
-        images = pickle.load(f)
-    print("Изображения загружены")
-except Exception as e:
-    print(f"Ошибка загрузки изображений: {e}")
-    images = {}
-
-def get_image(key, default=""):
-    """Получить изображение в формате base64"""
-    if key in images and images[key]:
-        return f'<img src="data:image/png;base64,{images[key]}" alt="{key}" style="max-width: 100%; height: auto; display: block; margin: 15px auto; border: 1px solid black;">'
-    return default
-
-# Подготовка таблицы сравнения
-comparison_table_rows = ""
-for i, comp in enumerate(results['comparison'], 1):
-    comparison_table_rows += f"""
-        <tr>
-            <td>{i}</td>
-            <td>{comp['input1']:.1f}</td>
-            <td>{comp['input2']:.1f}</td>
-            <td>{comp['mamdani']:.4f}</td>
-            <td>{comp['sugeno']:.4f}</td>
-            <td>{comp['difference']:.4f}</td>
-        </tr>"""
-
-# Статистика
-mamdani_outputs = [r['mamdani'] for r in results['comparison']]
-sugeno_outputs = [r['sugeno'] for r in results['comparison']]
-differences = [r['difference'] for r in results['comparison']]
-
-avg_mamdani = np.mean(mamdani_outputs)
-avg_sugeno = np.mean(sugeno_outputs)
-avg_difference = np.mean(differences)
-max_difference = np.max(differences)
-min_difference = np.min(differences)
-
-# Формирование HTML
-html_content = f"""<!DOCTYPE html>
+def generate_html_report():
+    """Генерирует HTML отчет"""
+    
+    # Загружаем результаты
+    try:
+        with open('lab10_results.pkl', 'rb') as f:
+            results = pickle.load(f)
+    except FileNotFoundError:
+        print("Ошибка: файл lab10_results.pkl не найден. Сначала запустите lab10_calculation.py")
+        return
+    
+    student1 = results['student1']
+    student2 = results['student2']
+    
+    M1 = student1['M']  # M - матрица переходов
+    p_bar1 = student1['p_bar']  # p̅ - вектор стационарных вероятностей
+    states1 = student1['states']
+    
+    M2 = student2['M']
+    p_bar2 = student2['p_bar']
+    states2 = student2['states']
+    
+    html = '''<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Лабораторная работа 10: Сравнение методов Мамдани и Сугено</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>
-        MathJax = {{
-            tex: {{
-                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-                displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
-            }}
-        }};
-    </script>
+    <title>Лабораторная работа 10: Марковские цепи для студентов</title>
     <style>
-        body {{
+        body {
             font-family: 'Times New Roman', serif;
             max-width: 900px;
-            margin: 0 auto;
+            margin: 20px auto;
             padding: 20px;
-            color: black;
-            background-color: white;
-        }}
-        .author {{
-            text-align: right;
-            margin-bottom: 20px;
-            font-size: 14pt;
-        }}
-        h1 {{
+            line-height: 1.6;
+            color: #000;
+            background: #fff;
+        }
+        h1 {
             text-align: center;
             font-size: 18pt;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             font-weight: bold;
-        }}
-        h2 {{
+        }
+        h2 {
             font-size: 16pt;
             margin-top: 30px;
             margin-bottom: 15px;
             font-weight: bold;
-        }}
-        h3 {{
+        }
+        h3 {
             font-size: 14pt;
             margin-top: 20px;
             margin-bottom: 10px;
             font-weight: bold;
-        }}
-        p {{
-            text-align: justify;
-            line-height: 1.5;
+        }
+        p {
             margin: 10px 0;
-        }}
-        table {{
+            text-align: justify;
+        }
+        table {
             border-collapse: collapse;
             width: 100%;
             margin: 15px 0;
-        }}
-        table, th, td {{
-            border: 1px solid black;
-        }}
-        th, td {{
+            border: 1px solid #000;
+        }
+        th, td {
+            border: 1px solid #000;
             padding: 8px;
             text-align: center;
-        }}
-        th {{
-            background-color: white;
+        }
+        th {
+            background-color: #fff;
             font-weight: bold;
-        }}
-        img {{
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 15px auto;
-            border: 1px solid black;
-        }}
-        .figure-caption {{
-            text-align: center;
-            font-style: italic;
-            margin-top: 5px;
-            margin-bottom: 15px;
-        }}
-        .formula {{
+        }
+        .formula {
             text-align: center;
             margin: 15px 0;
             font-style: italic;
-        }}
-        .code-block {{
-            background-color: #f5f5f5;
-            border: 1px solid #ccc;
+        }
+        .solution {
+            margin: 15px 0;
+        }
+        .result {
+            margin: 10px 0;
             padding: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            overflow-x: auto;
+            border: 1px solid #000;
+        }
+        .author {
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 14pt;
+        }
+        .equation {
+            text-align: center;
             margin: 15px 0;
-        }}
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
+    <h1>Лабораторная работа на тему «Марковские цепи для студентов»</h1>
+    
     <div class="author">
         <p><strong>Выполнил:</strong> Тимошинов Егор Борисович</p>
         <p><strong>Группа:</strong> 16</p>
     </div>
+
+    <h2>Цель работы</h2>
+    <p>Для оставшихся двух студентов определить матрицу переходных вероятностей и решить векторно-матричное уравнение (10)-(11) для нахождения стационарного распределения.</p>
     
-    <h1>Лабораторная работа</h1>
-    <h2>Сравнение методов Мамдани и Сугено</h2>
+    <h2>Теоретические сведения</h2>
+    <p>Для марковской цепи с матрицей переходных вероятностей M стационарное распределение p̅ определяется из системы уравнений:</p>
+    <div class="equation">
+        <p><strong>Уравнение (10):</strong> p̅ × (M - E) = 0</p>
+        <p>где p̅ — вектор-строка установившихся состояний (p̅₁; p̅₂; p̅₃; p̅₄),</p>
+        <p>M — матрица переходов, E — единичная матрица.</p>
+        <p><strong>Уравнение (11):</strong> Σ<sub>j=1</sub><sup>4</sup> p̅<sub>j</sub> = 1</p>
+    </div>
+    <p>Уравнение (10) представляет собой систему линейных алгебраических уравнений, которая является линейно-зависимой. Уравнение (11) — нормировочное условие, используемое для дополнения системы.</p>
     
-    <h3>Цель работы</h3>
-    <p>Изучение и сравнение двух основных методов нечеткого вывода: Мамдани и Сугено. Анализ особенностей каждого метода, их преимуществ и недостатков на примере задачи управления с двумя входными переменными.</p>
+'''
     
-    <h3>Теоретические сведения</h3>
+    # Студент 1
+    html += f'''
+    <h2>Студент 1</h2>
+    <p>Определим матрицу переходных вероятностей на основе данных о переходах между состояниями.</p>
+    <p>Состояния: {', '.join([f'S<sub>{s}</sub>' for s in states1])}</p>
     
-    <h4>Метод Мамдани</h4>
-    <p>Метод Мамдани является одним из первых и наиболее распространенных методов нечеткого вывода. В этом методе как предпосылки, так и заключения правил представлены нечеткими множествами. Процесс вывода включает следующие этапы:</p>
-    <ol>
-        <li>Фаззификация входных переменных</li>
-        <li>Вычисление степени истинности правил</li>
-        <li>Агрегация выходных нечетких множеств</li>
-        <li>Дефаззификация для получения четкого выходного значения</li>
-    </ol>
+    {format_matrix_html(M1, states1, "M₁")}
     
-    <p>Формула дефаззификации методом центра тяжести:</p>
-    <div class="formula">
-        $y = \\frac{{\\int x \\cdot \\mu(x) dx}}{{\\int \\mu(x) dx}}$
+    <h3>Решение векторно-матричного уравнения (10)-(11)</h3>
+    <div class="solution">
+        <p>Для нахождения стационарного распределения решаем систему уравнений:</p>
+        <p><strong>Уравнение (10):</strong> p̅₁ × (M₁ - E) = 0</p>
+        <p>где p̅₁ — вектор-строка установившихся состояний (p̅₁₁; p̅₁₂; p̅₁₃; p̅₁₄),</p>
+        <p>M₁ — матрица переходов, E — единичная матрица.</p>
+        <p><strong>Уравнение (11):</strong> Σ<sub>j=1</sub><sup>4</sup> p̅₁<sub>j</sub> = 1</p>
+        
+        <p>Преобразуем уравнение (10) в систему: (M₁ - E)ᵀ p̅₁ᵀ = 0.</p>
+        <p>Система линейно-зависима, поэтому заменяем последнее уравнение на нормировочное условие (11).</p>
+        
+        <p>Решая систему, получаем стационарное распределение:</p>
+        {format_vector_html(p_bar1, states1, "p̅₁")}
+        
+        <p>Проверка уравнения (11):</p>
+        <p>Σ<sub>j=1</sub><sup>4</sup> p̅₁<sub>j</sub> = {p_bar1.sum():.6f} ≈ 1,000</p>
+        
+        <p>Проверка уравнения (10) p̅ × (M - E) = 0:</p>
+        <p>p̅₁ × (M₁ - E) = {format_vector_html(p_bar1 @ (M1 - np.eye(len(states1))), states1, "")[3:-4]}</p>
+        <p>Максимальная абсолютная величина: {np.max(np.abs(p_bar1 @ (M1 - np.eye(len(states1))))):.10f}</p>
     </div>
     
-    <h4>Метод Сугено</h4>
-    <p>Метод Сугено (Такаги-Сугено) отличается от метода Мамдани тем, что выходные функции правил являются четкими функциями входных переменных, а не нечеткими множествами. Это упрощает процесс дефаззификации, так как не требуется этап дефаззификации - выход вычисляется как взвешенная сумма выходных функций правил.</p>
-    
-    <p>Формула вывода для системы Сугено первого порядка:</p>
-    <div class="formula">
-        $y = \\frac{{\\sum_{{i=1}}^{{n}} w_i \\cdot f_i(x_1, x_2, ..., x_m)}}{{\\sum_{{i=1}}^{{n}} w_i}}$
+    <div class="result">
+        <p><strong>Результаты для студента 1:</strong></p>
+        <table>
+            <tr>
+                <th>Состояние</th>
+                <th>Стационарная вероятность p̅₁</th>
+            </tr>
+'''
+    for i, state in enumerate(states1):
+        html += f'''            <tr>
+                <td>S<sub>{state}</sub></td>
+                <td>{p_bar1[i]:.6f}</td>
+            </tr>
+'''
+    html += '''        </table>
     </div>
     
-    <p>где $w_i$ - степень истинности $i$-го правила, $f_i$ - выходная функция $i$-го правила.</p>
+'''
     
-    <h3>Описание системы</h3>
-    <p>Для сравнения методов была разработана нечеткая система управления с двумя входными переменными и одной выходной переменной:</p>
-    <ul>
-        <li><strong>Входная переменная 1:</strong> диапазон от 0 до 10, три терма: низкое, среднее, высокое</li>
-        <li><strong>Входная переменная 2:</strong> диапазон от 0 до 10, три терма: низкое, среднее, высокое</li>
-        <li><strong>Выходная переменная:</strong> диапазон от 0 до 20</li>
-    </ul>
+    # Студент 2
+    html += f'''
+    <h2>Студент 2</h2>
+    <p>Определим матрицу переходных вероятностей на основе данных о переходах между состояниями.</p>
+    <p>Состояния: {', '.join([f'S<sub>{s}</sub>' for s in states2])}</p>
     
-    <p>Система содержит 9 правил вывода, охватывающих все комбинации входных термов.</p>
+    {format_matrix_html(M2, states2, "M₂")}
     
-    <h3>Функции принадлежности</h3>
-    <p>Для входных переменных используются треугольные функции принадлежности:</p>
-    {get_image('membership_plot', '<p>График функций принадлежности</p>')}
-    <div class="figure-caption">Рисунок 1. Функции принадлежности входных переменных</div>
+    <h3>Решение векторно-матричного уравнения (10)-(11)</h3>
+    <div class="solution">
+        <p>Для нахождения стационарного распределения решаем систему уравнений:</p>
+        <p><strong>Уравнение (10):</strong> p̅₂ × (M₂ - E) = 0</p>
+        <p>где p̅₂ — вектор-строка установившихся состояний (p̅₂₁; p̅₂₂; p̅₂₃; p̅₂₄),</p>
+        <p>M₂ — матрица переходов, E — единичная матрица.</p>
+        <p><strong>Уравнение (11):</strong> Σ<sub>j=1</sub><sup>4</sup> p̅₂<sub>j</sub> = 1</p>
+        
+        <p>Преобразуем уравнение (10) в систему: (M₂ - E)ᵀ p̅₂ᵀ = 0.</p>
+        <p>Система линейно-зависима, поэтому заменяем последнее уравнение на нормировочное условие (11).</p>
+        
+        <p>Решая систему, получаем стационарное распределение:</p>
+        {format_vector_html(p_bar2, states2, "p̅₂")}
+        
+        <p>Проверка уравнения (11):</p>
+        <p>Σ<sub>j=1</sub><sup>4</sup> p̅₂<sub>j</sub> = {p_bar2.sum():.6f} ≈ 1,000</p>
+        
+        <p>Проверка уравнения (10) p̅ × (M - E) = 0:</p>
+        <p>p̅₂ × (M₂ - E) = {format_vector_html(p_bar2 @ (M2 - np.eye(len(states2))), states2, "")[3:-4]}</p>
+        <p>Максимальная абсолютная величина: {np.max(np.abs(p_bar2 @ (M2 - np.eye(len(states2))))):.10f}</p>
+    </div>
     
-    <h2>Результаты сравнения</h2>
+    <div class="result">
+        <p><strong>Результаты для студента 2:</strong></p>
+        <table>
+            <tr>
+                <th>Состояние</th>
+                <th>Стационарная вероятность p̅₂</th>
+            </tr>
+'''
+    for i, state in enumerate(states2):
+        html += f'''            <tr>
+                <td>S<sub>{state}</sub></td>
+                <td>{p_bar2[i]:.6f}</td>
+            </tr>
+'''
+    html += '''        </table>
+    </div>
     
-    <h3>Таблица результатов тестирования</h3>
-    <table>
-        <tr>
-            <th>№</th>
-            <th>Вход 1</th>
-            <th>Вход 2</th>
-            <th>Мамдани</th>
-            <th>Сугено</th>
-            <th>Разница</th>
-        </tr>
-        {comparison_table_rows}
-    </table>
-    
-    <h3>Статистика сравнения</h3>
-    <table>
-        <tr>
-            <th>Параметр</th>
-            <th>Значение</th>
-        </tr>
-        <tr>
-            <td>Среднее выходное значение (Мамдани)</td>
-            <td>{avg_mamdani:.4f}</td>
-        </tr>
-        <tr>
-            <td>Среднее выходное значение (Сугено)</td>
-            <td>{avg_sugeno:.4f}</td>
-        </tr>
-        <tr>
-            <td>Средняя разница между методами</td>
-            <td>{avg_difference:.4f}</td>
-        </tr>
-        <tr>
-            <td>Максимальная разница</td>
-            <td>{max_difference:.4f}</td>
-        </tr>
-        <tr>
-            <td>Минимальная разница</td>
-            <td>{min_difference:.4f}</td>
-        </tr>
-    </table>
-    
-    <h3>Графическое сравнение выходных значений</h3>
-    {get_image('comparison_plot', '<p>График сравнения</p>')}
-    <div class="figure-caption">Рисунок 2. Сравнение выходных значений систем Мамдани и Сугено</div>
-    
-    <h3>График разницы между методами</h3>
-    {get_image('difference_plot', '<p>График разницы</p>')}
-    <div class="figure-caption">Рисунок 3. Абсолютная разница между выходными значениями методов</div>
-    
-    <h3>Поверхности выхода</h3>
-    
-    <h4>Система Мамдани</h4>
-    {get_image('mamdani_surface', '<p>Поверхность Мамдани</p>')}
-    <div class="figure-caption">Рисунок 4. Поверхность выхода системы Мамдани</div>
-    
-    <h4>Система Сугено</h4>
-    {get_image('sugeno_surface', '<p>Поверхность Сугено</p>')}
-    <div class="figure-caption">Рисунок 5. Поверхность выхода системы Сугено</div>
-    
-    <h2>Анализ результатов</h2>
-    
-    <h3>Преимущества метода Мамдани</h3>
-    <ul>
-        <li>Интуитивно понятная интерпретация правил</li>
-        <li>Возможность визуализации выходных нечетких множеств</li>
-        <li>Хорошо подходит для экспертных систем</li>
-        <li>Позволяет анализировать степень неопределенности вывода</li>
-    </ul>
-    
-    <h3>Преимущества метода Сугено</h3>
-    <ul>
-        <li>Более высокая вычислительная эффективность</li>
-        <li>Отсутствие необходимости в дефаззификации</li>
-        <li>Лучшая приспособляемость к данным (возможность обучения)</li>
-        <li>Более плавные выходные поверхности</li>
-        <li>Удобство использования в системах управления</li>
-    </ul>
-    
-    <h3>Выводы</h3>
-    <p>Проведенное сравнение показало, что оба метода дают сопоставимые результаты для рассматриваемой задачи. Метод Мамдани обеспечивает более интуитивную интерпретацию результатов, в то время как метод Сугено демонстрирует более высокую вычислительную эффективность и лучше подходит для задач, требующих адаптации параметров на основе данных.</p>
-    
-    <p>Выбор метода зависит от конкретной задачи: для экспертных систем с четкой интерпретацией правил предпочтительнее метод Мамдани, а для систем управления и задач оптимизации - метод Сугено.</p>
+    <h2>Выводы</h2>
+    <p>Для обоих студентов были определены матрицы переходных вероятностей и решены векторно-матричные уравнения (10)-(11) для нахождения стационарных распределений.</p>
+    <p>Стационарное распределение показывает долгосрочные вероятности нахождения системы в каждом из состояний при бесконечном числе переходов.</p>
     
 </body>
-</html>"""
+</html>'''
+    
+    # Сохраняем HTML
+    output_file = 'Timoshinov_E_B_Lab_10.html'
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(html)
+    
+    print(f"HTML отчет сохранен в файл: {output_file}")
 
-# Сохранение HTML файла
-output_file = 'Timoshinov_E_B_Lab_10.html'
-with open(output_file, 'w', encoding='utf-8') as f:
-    f.write(html_content)
-
-print(f"HTML отчет успешно создан: {output_file}")
+if __name__ == '__main__':
+    generate_html_report()

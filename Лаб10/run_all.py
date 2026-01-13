@@ -1,52 +1,39 @@
 # -*- coding: utf-8 -*-
 """
-Главный скрипт для запуска лабораторной работы 10
+Главный скрипт для выполнения лабораторной работы 10
 """
 
-import os
+import subprocess
 import sys
+import os
 
-# Меняем рабочую директорию на директорию скрипта
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-print("=" * 60)
-print("Лабораторная работа 10: Сравнение методов Мамдани и Сугено")
-print("=" * 60)
+print("=" * 70)
+print("ЛАБОРАТОРНАЯ РАБОТА 10")
+print("Определение матрицы переходных вероятностей и решение векторно-матричного уравнения")
+print("=" * 70)
 
-# Шаг 1: Выполнение основной лабораторной работы
-print("\nШаг 1: Выполнение нечетких систем...")
+# Шаг 1: Выполнение вычислений
+print("\nШаг 1: Выполнение вычислений...")
 try:
-    import fuzzy_comparison_lab
-    print("✓ Нечеткие системы успешно выполнены")
+    import lab10_calculation
+    print("✓ Вычисления выполнены успешно")
 except Exception as e:
-    print(f"✗ Ошибка при выполнении нечетких систем: {e}")
-    import traceback
-    traceback.print_exc()
+    print(f"✗ Ошибка при выполнении вычислений: {e}")
     sys.exit(1)
 
-# Шаг 2: Генерация графиков
-print("\nШаг 2: Генерация графиков...")
-try:
-    import generate_plots
-    print("✓ Графики успешно сгенерированы")
-except Exception as e:
-    print(f"✗ Ошибка при генерации графиков: {e}")
-    import traceback
-    traceback.print_exc()
-    sys.exit(1)
-
-# Шаг 3: Генерация HTML отчета
-print("\nШаг 3: Генерация HTML отчета...")
+# Шаг 2: Генерация HTML отчета
+print("\nШаг 2: Генерация HTML отчета...")
 try:
     import generate_lab_report
-    print("✓ HTML отчет успешно создан")
+    generate_lab_report.generate_html_report()
+    print("✓ HTML отчет сгенерирован успешно")
 except Exception as e:
-    print(f"✗ Ошибка при генерации HTML отчета: {e}")
-    import traceback
-    traceback.print_exc()
+    print(f"✗ Ошибка при генерации отчета: {e}")
     sys.exit(1)
 
-print("\n" + "=" * 60)
-print("Лабораторная работа выполнена успешно!")
-print("Откройте файл Timoshinov_E_B_Lab_10.html в браузере")
-print("=" * 60)
+print("\n" + "=" * 70)
+print("Лабораторная работа выполнена!")
+print("Результаты сохранены в файл: Timoshinov_E_B_Lab_10.html")
+print("=" * 70)

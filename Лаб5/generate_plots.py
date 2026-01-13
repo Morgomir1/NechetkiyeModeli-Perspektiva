@@ -220,99 +220,133 @@ def task2_fuzzy_sets():
 def task3_consulting():
     """
     Задача о консалтинге в области выбора профессии.
-    Используем нечеткие отношения для определения подходящей профессии.
+    Используем композицию нечетких отношений для определения подходящей профессии.
     """
     # Множество кандидатов
     candidates = ['Кандидат 1', 'Кандидат 2', 'Кандидат 3', 'Кандидат 4', 'Кандидат 5']
     
+    # Множество характеристик
+    characteristics = ['Математические', 'Творческие', 'Коммуникативные']
+    
     # Множество профессий
     professions = ['Программист', 'Менеджер', 'Дизайнер', 'Аналитик', 'Маркетолог']
     
-    # Характеристики кандидатов (нечеткие множества)
-    # Математические способности
-    math_skills = {
-        'Кандидат 1': 0.9,
-        'Кандидат 2': 0.6,
-        'Кандидат 3': 0.4,
-        'Кандидат 4': 0.8,
-        'Кандидат 5': 0.5
-    }
+    # Отношение R: Кандидаты → Характеристики (способности кандидатов)
+    # Матрица размерности [кандидаты × характеристики]
+    R = np.array([
+        [0.9, 0.3, 0.4],  # Кандидат 1: math, creative, comm
+        [0.6, 0.7, 0.9],  # Кандидат 2
+        [0.4, 0.9, 0.6],  # Кандидат 3
+        [0.8, 0.5, 0.7],  # Кандидат 4
+        [0.5, 0.8, 0.8]   # Кандидат 5
+    ])
     
-    # Творческие способности
-    creative_skills = {
-        'Кандидат 1': 0.3,
-        'Кандидат 2': 0.7,
-        'Кандидат 3': 0.9,
-        'Кандидат 4': 0.5,
-        'Кандидат 5': 0.8
-    }
+    # Отношение S: Характеристики → Профессии (требования профессий)
+    # Матрица размерности [характеристики × профессии]
+    # Столбцы: Программист, Менеджер, Дизайнер, Аналитик, Маркетолог
+    S = np.array([
+        [0.9, 0.5, 0.2, 0.8, 0.3],  # Математические способности
+        [0.2, 0.3, 0.9, 0.3, 0.7],  # Творческие способности
+        [0.5, 0.9, 0.6, 0.6, 0.9]   # Коммуникативные способности
+    ])
     
-    # Коммуникативные способности
-    comm_skills = {
-        'Кандидат 1': 0.4,
-        'Кандидат 2': 0.9,
-        'Кандидат 3': 0.6,
-        'Кандидат 4': 0.7,
-        'Кандидат 5': 0.8
-    }
-    
-    # Требования профессий к характеристикам
-    # Программист: высокие математические, низкие творческие, средние коммуникативные
-    # Менеджер: средние математические, низкие творческие, высокие коммуникативные
-    # Дизайнер: низкие математические, высокие творческие, средние коммуникативные
-    # Аналитик: высокие математические, низкие творческие, средние коммуникативные
-    # Маркетолог: низкие математические, средние творческие, высокие коммуникативные
-    
-    profession_requirements = {
-        'Программист': {'math': 0.9, 'creative': 0.2, 'comm': 0.5},
-        'Менеджер': {'math': 0.5, 'creative': 0.3, 'comm': 0.9},
-        'Дизайнер': {'math': 0.2, 'creative': 0.9, 'comm': 0.6},
-        'Аналитик': {'math': 0.8, 'creative': 0.3, 'comm': 0.6},
-        'Маркетолог': {'math': 0.3, 'creative': 0.7, 'comm': 0.9}
-    }
-    
-    # Вычисляем совместимость кандидатов с профессиями
-    # Используем операцию MIN для каждой характеристики, затем MAX для объединения
+    # Композиция отношений R∘S: Кандидаты → Профессии
+    # Используем MAX-MIN композицию: μ_{R∘S}(c, p) = max_k min(μ_R(c, k), μ_S(k, p))
+    # где c - кандидат, p - профессия, k - характеристика
     compatibility_matrix = np.zeros((len(candidates), len(professions)))
     
-    for i, candidate in enumerate(candidates):
-        for j, profession in enumerate(professions):
-            req = profession_requirements[profession]
-            # Совместимость по каждой характеристике (MIN)
-            math_comp = min(math_skills[candidate], req['math'])
-            creative_comp = min(creative_skills[candidate], req['creative'])
-            comm_comp = min(comm_skills[candidate], req['comm'])
-            # Общая совместимость - используем среднее арифметическое для более гибкой оценки
-            compatibility_matrix[i, j] = (math_comp + creative_comp + comm_comp) / 3
-    
-    # Визуализация матрицы совместимости
-    fig, ax = plt.subplots(figsize=(12, 8))
-    im = ax.imshow(compatibility_matrix, cmap='gray', aspect='auto', vmin=0, vmax=1)
-    
-    ax.set_xticks(np.arange(len(professions)))
-    ax.set_yticks(np.arange(len(candidates)))
-    ax.set_xticklabels(professions, rotation=45, ha='right')
-    ax.set_yticklabels(candidates)
-    
-    # Добавляем значения в ячейки
     for i in range(len(candidates)):
         for j in range(len(professions)):
-            text = ax.text(j, i, f'{compatibility_matrix[i, j]:.2f}',
-                          ha="center", va="center", 
-                          color="white" if compatibility_matrix[i, j] > 0.5 else "black",
-                          fontsize=9)
+            # Для каждой характеристики k вычисляем min(R[i,k], S[k,j])
+            # Затем берем максимум по всем характеристикам
+            max_min_values = []
+            for k in range(len(characteristics)):
+                min_val = min(R[i, k], S[k, j])
+                max_min_values.append(min_val)
+            compatibility_matrix[i, j] = max(max_min_values)
     
-    ax.set_xlabel('Профессии', fontsize=12)
-    ax.set_ylabel('Кандидаты', fontsize=12)
-    ax.set_title('Матрица совместимости кандидатов с профессиями', fontsize=14)
+    # Визуализация всех матриц
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
     
-    plt.colorbar(im, ax=ax, label='Степень совместимости')
+    # Матрица R: Кандидаты → Характеристики
+    im1 = axes[0].imshow(R, cmap='gray', aspect='auto', vmin=0, vmax=1)
+    axes[0].set_xticks(np.arange(len(characteristics)))
+    axes[0].set_yticks(np.arange(len(candidates)))
+    axes[0].set_xticklabels(characteristics, rotation=45, ha='right', fontsize=9)
+    axes[0].set_yticklabels(candidates, fontsize=9)
+    axes[0].set_xlabel('Характеристики', fontsize=11)
+    axes[0].set_ylabel('Кандидаты', fontsize=11)
+    axes[0].set_title('R: Кандидаты → Характеристики', fontsize=12)
+    for i in range(len(candidates)):
+        for j in range(len(characteristics)):
+            text = axes[0].text(j, i, f'{R[i, j]:.1f}',
+                              ha="center", va="center", 
+                              color="white" if R[i, j] > 0.5 else "black",
+                              fontsize=8)
+    plt.colorbar(im1, ax=axes[0], label='Степень принадлежности')
+    
+    # Матрица S: Характеристики → Профессии
+    im2 = axes[1].imshow(S, cmap='gray', aspect='auto', vmin=0, vmax=1)
+    axes[1].set_xticks(np.arange(len(professions)))
+    axes[1].set_yticks(np.arange(len(characteristics)))
+    axes[1].set_xticklabels(professions, rotation=45, ha='right', fontsize=9)
+    axes[1].set_yticklabels(characteristics, fontsize=9)
+    axes[1].set_xlabel('Профессии', fontsize=11)
+    axes[1].set_ylabel('Характеристики', fontsize=11)
+    axes[1].set_title('S: Характеристики → Профессии', fontsize=12)
+    for i in range(len(characteristics)):
+        for j in range(len(professions)):
+            text = axes[1].text(j, i, f'{S[i, j]:.1f}',
+                              ha="center", va="center", 
+                              color="white" if S[i, j] > 0.5 else "black",
+                              fontsize=8)
+    plt.colorbar(im2, ax=axes[1], label='Степень принадлежности')
+    
+    # Матрица R∘S: Кандидаты → Профессии (результат композиции)
+    im3 = axes[2].imshow(compatibility_matrix, cmap='gray', aspect='auto', vmin=0, vmax=1)
+    axes[2].set_xticks(np.arange(len(professions)))
+    axes[2].set_yticks(np.arange(len(candidates)))
+    axes[2].set_xticklabels(professions, rotation=45, ha='right', fontsize=9)
+    axes[2].set_yticklabels(candidates, fontsize=9)
+    axes[2].set_xlabel('Профессии', fontsize=11)
+    axes[2].set_ylabel('Кандидаты', fontsize=11)
+    axes[2].set_title('R∘S: Кандидаты → Профессии (композиция)', fontsize=12)
+    for i in range(len(candidates)):
+        for j in range(len(professions)):
+            text = axes[2].text(j, i, f'{compatibility_matrix[i, j]:.2f}',
+                              ha="center", va="center", 
+                              color="white" if compatibility_matrix[i, j] > 0.5 else "black",
+                              fontsize=8)
+    plt.colorbar(im3, ax=axes[2], label='Степень совместимости')
+    
     plt.tight_layout()
     plt.savefig('task3_consulting.png', dpi=300, bbox_inches='tight')
     plt.close()
     
-    # Выводим матрицу для проверки
-    print("\nМатрица совместимости:")
+    # Выводим матрицы для проверки
+    print("\nМатрица R (Кандидаты → Характеристики):")
+    print(f"{'Кандидат':<15}", end="")
+    for char in characteristics:
+        print(f"{char[:12]:>12}", end="")
+    print()
+    for i, candidate in enumerate(candidates):
+        print(f"{candidate:<15}", end="")
+        for j in range(len(characteristics)):
+            print(f"{R[i, j]:>12.2f}", end="")
+        print()
+    
+    print("\nМатрица S (Характеристики → Профессии):")
+    print(f"{'Характеристика':<15}", end="")
+    for prof in professions:
+        print(f"{prof[:10]:>12}", end="")
+    print()
+    for i, char in enumerate(characteristics):
+        print(f"{char:<15}", end="")
+        for j in range(len(professions)):
+            print(f"{S[i, j]:>12.2f}", end="")
+        print()
+    
+    print("\nМатрица R∘S (Кандидаты → Профессии, композиция):")
     print(f"{'Кандидат':<15}", end="")
     for prof in professions:
         print(f"{prof[:10]:>12}", end="")
@@ -331,7 +365,7 @@ def task3_consulting():
         best_score = compatibility_matrix[i, best_prof_idx]
         best_matches[candidate] = (best_prof, best_score)
     
-    return compatibility_matrix, candidates, professions, best_matches
+    return compatibility_matrix, candidates, professions, best_matches, R, S, characteristics
 
 if __name__ == '__main__':
     print("Генерация графиков для лабораторной работы 5...")
