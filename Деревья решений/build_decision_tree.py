@@ -123,6 +123,75 @@ def fig_to_base64(fig):
     plt.close(fig)
     return img_base64
 
+# Задание 1: Визуализация данных
+# Распределение количественных признаков
+fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+
+axes[0, 0].hist(data['возраст'], bins=20, color=colors[0], edgecolor='black', alpha=0.7)
+axes[0, 0].set_xlabel('Возраст', fontsize=11)
+axes[0, 0].set_ylabel('Частота', fontsize=11)
+axes[0, 0].set_title('Распределение возраста клиентов', fontsize=12)
+axes[0, 0].grid(True, linestyle='--', alpha=0.3)
+
+axes[0, 1].hist(data['доход'], bins=20, color=colors[1], edgecolor='black', alpha=0.7)
+axes[0, 1].set_xlabel('Доход', fontsize=11)
+axes[0, 1].set_ylabel('Частота', fontsize=11)
+axes[0, 1].set_title('Распределение дохода клиентов', fontsize=12)
+axes[0, 1].grid(True, linestyle='--', alpha=0.3)
+
+axes[1, 0].hist(data['срок_кредита'], bins=5, color=colors[2], edgecolor='black', alpha=0.7)
+axes[1, 0].set_xlabel('Срок кредита (месяцы)', fontsize=11)
+axes[1, 0].set_ylabel('Частота', fontsize=11)
+axes[1, 0].set_title('Распределение срока кредита', fontsize=12)
+axes[1, 0].grid(True, linestyle='--', alpha=0.3)
+
+# Распределение целевой переменной
+target_counts = data['возврат_кредита'].value_counts()
+axes[1, 1].bar(target_counts.index, target_counts.values, color=[colors[2], colors[3]], edgecolor='black', alpha=0.7)
+axes[1, 1].set_xlabel('Возврат кредита', fontsize=11)
+axes[1, 1].set_ylabel('Количество', fontsize=11)
+axes[1, 1].set_title('Распределение целевой переменной', fontsize=12)
+axes[1, 1].grid(True, axis='y', linestyle='--', alpha=0.3)
+
+plt.tight_layout()
+img_data_dist = fig_to_base64(fig)
+
+# Распределение категориальных признаков
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+history_counts = data['кредитная_история'].value_counts()
+axes[0].bar(history_counts.index, history_counts.values, color=colors[:3], edgecolor='black', alpha=0.7)
+axes[0].set_xlabel('Кредитная история', fontsize=11)
+axes[0].set_ylabel('Количество', fontsize=11)
+axes[0].set_title('Распределение кредитной истории', fontsize=12)
+axes[0].grid(True, axis='y', linestyle='--', alpha=0.3)
+axes[0].tick_params(axis='x', rotation=45)
+
+purpose_counts = data['цель_кредита'].value_counts()
+axes[1].bar(purpose_counts.index, purpose_counts.values, color=colors, edgecolor='black', alpha=0.7)
+axes[1].set_xlabel('Цель кредита', fontsize=11)
+axes[1].set_ylabel('Количество', fontsize=11)
+axes[1].set_title('Распределение цели кредита', fontsize=12)
+axes[1].grid(True, axis='y', linestyle='--', alpha=0.3)
+axes[1].tick_params(axis='x', rotation=45)
+
+plt.tight_layout()
+img_cat_dist = fig_to_base64(fig)
+
+# Корреляционная матрица количественных признаков
+fig, ax = plt.subplots(figsize=(10, 8))
+numeric_data = data[['возраст', 'доход', 'срок_кредита', 'возврат_кредита_код']]
+corr_matrix = numeric_data.corr()
+sns.heatmap(corr_matrix, annot=True, fmt='.3f', cmap='coolwarm', center=0, 
+            square=True, linewidths=1, cbar_kws={"shrink": 0.8}, ax=ax)
+ax.set_title('Корреляционная матрица количественных признаков', fontsize=14, pad=20)
+plt.tight_layout()
+img_corr = fig_to_base64(fig)
+
+# Статистика по данным
+data_stats = data[['возраст', 'доход', 'срок_кредита']].describe()
+
 # Визуализация дерева решений
 fig, ax = plt.subplots(figsize=(20, 12))
 feature_names = ['Возраст', 'Доход', 'Кредитная история', 'Цель кредита', 'Срок кредита']
@@ -271,7 +340,18 @@ html_content = f"""<!DOCTYPE html>
     <h3>Цель работы</h3>
     <p>Изучение методов построения деревьев решений для решения задач классификации. Построение дерева решений для предсказания возврата кредита на основе характеристик клиента.</p>
     
-    <h3>Исходные данные</h3>
+    <h3>Задание</h3>
+    <ol>
+        <li>Подготовить данные о клиентах банка для построения дерева решений. Выполнить исследовательский анализ данных и визуализацию распределения признаков.</li>
+        <li>Построить дерево решений для классификации возврата кредита с использованием алгоритма CART.</li>
+        <li>Проанализировать важность признаков в построенном дереве решений.</li>
+        <li>Выполнить классификацию на тестовой выборке и построить таблицу сопряженности.</li>
+        <li>Оценить точность модели с помощью различных метрик классификации.</li>
+    </ol>
+    
+    <h2>Результаты выполнения задания</h2>
+    
+    <h3>Задание 1. Подготовка и анализ данных</h3>
     <p>Для построения модели использовался набор данных о клиентах банка, включающий следующие признаки:</p>
     <ul>
         <li>Возраст клиента (количественный признак)</li>
@@ -283,7 +363,49 @@ html_content = f"""<!DOCTYPE html>
     <p>Целевая переменная: возврат кредита (Да/Нет).</p>
     <p>Общее количество наблюдений: {n_samples}. Данные разделены на обучающую выборку (70%) и тестовую выборку (30%).</p>
     
-    <h3>1. Построение дерева решений</h3>
+    <p><strong>Описательная статистика количественных признаков:</strong></p>
+    <table>
+        <tr>
+            <th>Признак</th>
+            <th>Среднее</th>
+            <th>Стандартное отклонение</th>
+            <th>Минимум</th>
+            <th>Максимум</th>
+        </tr>
+        <tr>
+            <td>Возраст</td>
+            <td>{data_stats.loc['mean', 'возраст']:.2f}</td>
+            <td>{data_stats.loc['std', 'возраст']:.2f}</td>
+            <td>{data_stats.loc['min', 'возраст']:.0f}</td>
+            <td>{data_stats.loc['max', 'возраст']:.0f}</td>
+        </tr>
+        <tr>
+            <td>Доход</td>
+            <td>{data_stats.loc['mean', 'доход']:.2f}</td>
+            <td>{data_stats.loc['std', 'доход']:.2f}</td>
+            <td>{data_stats.loc['min', 'доход']:.0f}</td>
+            <td>{data_stats.loc['max', 'доход']:.0f}</td>
+        </tr>
+        <tr>
+            <td>Срок кредита</td>
+            <td>{data_stats.loc['mean', 'срок_кредита']:.2f}</td>
+            <td>{data_stats.loc['std', 'срок_кредита']:.2f}</td>
+            <td>{data_stats.loc['min', 'срок_кредита']:.0f}</td>
+            <td>{data_stats.loc['max', 'срок_кредита']:.0f}</td>
+        </tr>
+    </table>
+    
+    <p>На рисунках ниже представлены распределения признаков и целевой переменной:</p>
+    <img src="data:image/png;base64,{img_data_dist}" alt="Распределение количественных признаков и целевой переменной">
+    <p><em>Рисунок 1. Распределение количественных признаков и целевой переменной</em></p>
+    
+    <img src="data:image/png;base64,{img_cat_dist}" alt="Распределение категориальных признаков">
+    <p><em>Рисунок 2. Распределение категориальных признаков</em></p>
+    
+    <img src="data:image/png;base64,{img_corr}" alt="Корреляционная матрица">
+    <p><em>Рисунок 3. Корреляционная матрица количественных признаков</em></p>
+    
+    <h3>Задание 2. Построение дерева решений</h3>
     <p>Для построения дерева решений использовался алгоритм CART (Classification and Regression Trees) с критерием разделения Gini. Параметры модели:</p>
     <ul>
         <li>Максимальная глубина дерева: 5</li>
@@ -292,8 +414,9 @@ html_content = f"""<!DOCTYPE html>
     </ul>
     <p>Построенное дерево решений представлено на рисунке ниже.</p>
     <img src="data:image/png;base64,{img_tree}" alt="Дерево решений">
+    <p><em>Рисунок 4. Визуализация дерева решений</em></p>
     
-    <h3>2. Важность признаков</h3>
+    <h3>Задание 3. Анализ важности признаков</h3>
     <p>Важность признаков в построенном дереве решений:</p>
     <table>
         <tr>
@@ -309,11 +432,12 @@ for _, row in feature_importance.iterrows():
 """
 html_content += f"""    </table>
     <img src="data:image/png;base64,{img_importance}" alt="Важность признаков">
+    <p><em>Рисунок 5. Важность признаков в дереве решений</em></p>
     
-    <h3>3. Классификация на тестовой выборке</h3>
+    <h3>Задание 4. Классификация на тестовой выборке</h3>
     <p>Для оценки качества построенной модели была выполнена классификация на тестовой выборке, содержащей {len(y_test)} наблюдений.</p>
     
-    <h3>4. Таблица сопряженности</h3>
+    <h3>Задание 5. Таблица сопряженности и оценка точности</h3>
     <p>Таблица сопряженности показывает количество правильно и неправильно классифицированных наблюдений:</p>
     <table>
         <tr>
@@ -333,8 +457,7 @@ html_content += f"""    </table>
         </tr>
     </table>
     <img src="data:image/png;base64,{img_cm}" alt="Таблица сопряженности">
-    
-    <h3>5. Оценка точности модели</h3>
+    <p><em>Рисунок 6. Таблица сопряженности</em></p>
     <p>Характеристики точности построенной модели:</p>
     <table>
         <tr>
@@ -355,7 +478,7 @@ html_content += f"""    </table>
         </tr>
     </table>
     
-    <h3>6. Детальный отчет о классификации</h3>
+    <h3>Детальный отчет о классификации</h3>
     <table>
         <tr>
             <th>Класс</th>
@@ -394,7 +517,7 @@ html_content += f"""    </table>
         </tr>
     </table>
     
-    <h3>7. Текстовая структура дерева</h3>
+    <h3>Текстовая структура дерева</h3>
     <p>Ниже представлена текстовая структура построенного дерева решений (первые уровни):</p>
     <div class="code-block">{tree_text[:2000]}...</div>
     
